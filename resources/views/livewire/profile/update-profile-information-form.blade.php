@@ -20,6 +20,7 @@ new class extends Component
      */
     public function mount(): void
     {
+        $this->profile_picture = Auth::user()->profile_picture;
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
     }
@@ -82,7 +83,7 @@ new class extends Component
         </p>
     </header>
     @if(Auth::user()->profile_picture)
-     <img class="image rounded-circle" src="{{asset('/storage/'.Auth::user()->profile_picture)}}" alt="profile_image" style="width: 80px;height: 80px; padding: 10px; margin: 0px; ">
+     <img class="image rounded-circle" src="{{asset('storage/'.Auth::user()->profile_picture)}}" alt="profile_image" style="width: 80px;height: 80px; padding: 10px; margin: 0px; ">
     @endif
     <p>Games played: {{__(Auth::user()->games_played)}}
     Gamed won: {{__(Auth::user()->games_won)}}</p>
