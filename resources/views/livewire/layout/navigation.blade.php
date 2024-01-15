@@ -36,12 +36,15 @@ new class extends Component
                     <x-nav-link :href="route('lobbies')" :active="request()->routeIs('lobbies')" wire:navigate>
                         {{ __('Lobbies') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('sets')" :active="request()->routeIs('sets')" wire:navigate>
+                        {{ __('Sets') }}
+                    </x-nav-link>
                 </div>
             </div>
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 @if(Auth::user()->profile_picture)
-                <a href="{{route('profile')}}"><img class="image rounded-circle" src="{{asset('/storage/'.Auth::user()->profile_picture)}}" alt="profile_image" style="width: 80px;height: 80px; padding: 10px; margin: 0px; "></a>
+                <a href="{{route('profile')}}"><img class="image rounded-circle" src="{{asset('storage/images/'.Auth::user()->profile_picture)}}" alt="profile_image" style="width: 80px;height: 80px; padding: 10px; margin: 0px; "></a>
                @endif
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">

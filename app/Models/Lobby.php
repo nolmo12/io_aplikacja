@@ -31,4 +31,46 @@ class Lobby extends Model
         
         return $owner;
     }
+
+    public function countAnswerCards()
+    {
+
+    }
+
+    public function countQuestionCards()
+    {
+
+    }
+
+    public function getRandomCard()
+    {
+        $cards = $this->getAllCards();
+        $maxValue = count($cards);
+        $randomValue = rand(0, $maxValue-1);
+        return $cards[$randomValue];
+    }
+
+    public function getAllCards()
+    {
+        $this->load('sets.cards');
+
+        return $this->sets->flatMap(function ($set) {
+            return $set->cards;
+        });
+    }
+
+    public function getUsedCards()
+    {
+        return $this->cards;
+    }
+
+    public function cards()
+    {
+        return $this->belongsToMany(Card::class);
+    }
+    public function sets()
+    {
+        return $this->belongsToMany(Set::class);
+    }
+
 }

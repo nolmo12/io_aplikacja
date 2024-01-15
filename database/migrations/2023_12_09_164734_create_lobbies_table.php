@@ -15,10 +15,10 @@ return new class extends Migration
     {
         Schema::create('lobbies', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->integer('max_players');
-            $table->integer('current_round');
-            $table->integer('max_rounds');
+            $table->string('name')->unique();
+            $table->integer('max_players')->default(10);
+            $table->integer('current_round')->default(0);
+            $table->integer('max_rounds')->default(8);
             $table->foreignIdFor(Card::class);
             $table->foreignIdFor(User::class)->constrained();
             $table->timestamps();

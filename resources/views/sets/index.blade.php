@@ -1,10 +1,13 @@
+<?php
+use App\Models\User;
+?>
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Lobbies') }}
+            {{ __('Sets') }}
         </h2>
         <h3 class="text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            <a href="{{route('lobbies/create')}}">{{__('Create Lobby')}}</a>
+            <a href="{{ route('sets/user=', ['id' => Auth::user()->id]) }}">{{__('Browse your sets')}}</a>
         </h3>
     </x-slot>
 
@@ -12,14 +15,13 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                 <div class="max-w-xl">
-                    @if(count($lobbies) == 0)
-                    <h2>No lobbies found</h2>
+                    @if(count($sets) == 0)
+                    <h2>No sets found</h2>
                     @else
-                        @foreach($lobbies as $lobby)
-                        <a href="{{ route('lobby', ['id' => $lobby->id]) }}" class="game">
+                        @foreach($sets as $set)
+                        <a href="{{ route('set', ['id' => $set->id]) }}" class="game">
                             <div style="color: white">
-                                {{ $lobby->name }}, Players: {{ $lobby->countCurrentPlayers() }}/{{ $lobby->max_players }},
-                                Rounds: {{ $lobby->current_round }}/{{ $lobby->max_rounds }}, Owner: {{$lobby->getOwner()}}
+                                Set Name: {{$set->name}}, REFERENCE CODE: {{$set->reference_code}}
                             </div>
                         </a>                        
                         @endforeach

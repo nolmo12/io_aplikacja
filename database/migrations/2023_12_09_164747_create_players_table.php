@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('players', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class)->constrained();
+            $table->foreignIdFor(User::class)->constrained()->unique();
             $table->foreignIdFor(Lobby::class)->constrained();
             $table->integer('current_points');
             $table->boolean('is_judge');
