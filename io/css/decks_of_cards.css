@@ -1,0 +1,29 @@
+@import url('main_page.css');
+#top{
+    display: flex;
+}
+
+#main-content{
+    position: relative;
+    height: 100px;
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+}
+
+#green-button {
+    background-color: #00FF00; /* Zielone tło */
+    color: white; /* Biały tekst */
+    padding: 10px 20px; /* Odstępy */
+    margin: auto;
+    margin-right: 30px;
+    height: 60px;
+    border: none; /* Brak obramowania */
+    border-radius: 5px; /* Zaokrąglone rogi */
+    font-size: 16px; /* Rozmiar czcionki */
+    }
+
+#green-button:hover {
+    background-color: #00CC00; /* Ciemniejsza zieleń po najechaniu */
+}
