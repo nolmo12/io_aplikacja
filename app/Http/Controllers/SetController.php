@@ -74,26 +74,18 @@ class SetController extends Controller
 
         $card->set_id = $set->id;
 
-        if($request->card_content != '')
+        if($request->new_black_card != '' && $request->new_black_card != 'Wpisz tekst')
         {
-            $isQuestion = ($request->card_type === 'Question Card');
-            if($isQuestion && str_contains($request->card_content, '__'))
-            {
-                $card->card_description = $request->card_content;
-                $card->is_question = $isQuestion;
-                $card->save();
-            }
-            else if($isQuestion)
-            {
-                return redirect('sets/edit/'.$id)->with('status', 'Could not update sets or/and cards!');
-            }
-            else
-            {
-                $card->card_description = $request->card_content;
-                $card->is_question = $isQuestion;
-                $card->save();
-            }
-            
+            $card->card_description = $request->new_black_card;
+            $card->is_question = True;
+            $card->save();
+        }
+
+        if($request->new_white_card != '' && $request->new_white_card != 'Wpisz tekst')
+        {
+            $card->card_description = $request->new_white_card;
+            $card->is_question = False;
+            $card->save();
         }
 
         foreach ($set->getAllCards() as $card) {

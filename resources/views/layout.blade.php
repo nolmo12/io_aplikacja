@@ -39,6 +39,9 @@ new class extends Component
         @if(request()->routeIs('profile/'))
         <link href="{{ URL::asset('css/user_profile.css') }}" rel="stylesheet"/>
         @endif
+        @if(request()->routeIs('sets/edit'))
+        <link href="{{ URL::asset('css/create_deck.css') }}" rel="stylesheet"/>
+        @endif
 
 
         <!-- Scripts -->

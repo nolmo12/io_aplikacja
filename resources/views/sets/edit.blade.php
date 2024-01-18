@@ -1,80 +1,60 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Sets') }}
-        </h2>
-    </x-slot>
+    @extends('layout')
+    @section('content')
+    <div class="empty-div"></div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <div class="container mt-4">
-                        @if(session('status'))
-                          <div class="alert alert-success">
-                              {{ session('status') }}
-                          </div>
-                        @endif    
-                        <form name="edit-set-post-form" id="edit-set-post-form" method="post" action="{{url('sets/update/'.$set->id)}}">
-                            @csrf
-                             <div class="form-group">
-                               <label for="name">Name</label>
-                               <input type="text" id="name" name="name" class="form-control" required="" value="{{$set->name}}">
-                             </div>
-                             <div class="form-group">
-                                <p>Add new card</p>
-                                <div class="form-group">
-                                    <label for="card-type">Card Type</label>
-                                    <select id="card-type" name="card_type">
-                                        <option value="Answer Card">Answer Card</option>
-                                        <option value="Question Card">Question Card</option>
-                                    </select>
-                                </div>
-                                  <div class="form-group">
-                                    <label for="card-content">Card content, remember to put __ in Question Cards!</label>
-                                    <textarea id="card-content" name="card_content"></textarea>
-                                  </div>
-                              </div>
-                              @foreach($set->getAllCardsType(True) as $card)
-                              <div class="form-group-m">
-                                <p>Edit card</p>
-                                <div class="form-group">
-                                    <label for="card-type{{$card->id}}">Card Type</label>
-                                    <select id="card-type{{$card->id}}" name="card_type{{$card->id}}">
-                                        <option value="Answer Card">Answer Card</option>
-                                        <option value="Question Card" selected>Question Card</option>
-                                    </select>
-                                </div>
-                                  <div class="form-group">
-                                    <label for="card-content{{$card->id}}">Card content</label>
-                                    <textarea id="card-content{{$card->id}}" name="card_content{{$card->id}}">{{$card->card_description}}</textarea>
-                                  </div>
-                                  <button type="button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Remove Card</button>
-                              </div>
-                              @endforeach
-                              @foreach($set->getAllCardsType(False) as $card)
-                              <div class="form-group-m">
-                                <p>Edit card</p>
-                                <div class="form-group">
-                                    <label for="card-type{{$card->id}}">Card Type</label>
-                                    <select id="card-type{{$card->id}}" name="card_type{{$card->id}}">
-                                        <option value="Answer Card" selected>Answer Card</option>
-                                        <option value="Question Card">Question Card</option>
-                                    </select>
-                                </div>
-                                  <div class="form-group{{$card->id}}">
-                                    <label for="card-content{{$card->id}}">Card content</label>
-                                    <textarea id="card-content{{$card->id}}" name="card_content{{$card->id}}">{{$card->card_description}}</textarea>
-                                  </div>
-                                  <button type="button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Remove Card</button>
-                              </div>
-                              @endforeach
-                             <button type="submit" class="btn btn-primary">Submit</button>
-                           </form>     
+    <div id="editor">
+        <div id="top-bar">
+            @if(session('status'))
+            <div class="alert alert-success">
+                {{ session('status') }}
+            </div>
+          @endif  
+            <form name="edit-set-post-form" id="edit-set-post-form" method="post" action="{{url('sets/update/'.$set->id)}}">
+                @csrf
+            <div id="deck-name-container">
+                  <label for="deck-name-input">Nazwa Talii</label>
+                <input type="text" id="deck-name-input" name="name" required="" value="{{$set->name}}">
+            </div>
+            <span id="editor-title">Edytor Talii</span>
+        </div>
+
+        <div id="cards-section">
+            <section class="cards-list">
+                <div class="card-container">
+                    <div class="card-white">
+                        <input class="card-input" name="new_white_card" value = "Wpisz tekst">
+                        <button class="remove-button">Dodaj Kartę</button>
+                    </div>
+                </div>
+
+                <div class="card-container">
+                    <div class="card-black">
+                        <input class="card-input" name="new_black_card" value = "Wpisz tekst">
+                        <button class="remove-button">Dodaj Kartę</button>
+                    </div>
+                </div>
+            </section>
+            <section>
+            @foreach($set->getAllCardsType(False) as $card)
+                <div class="card-white" id="card{{$card->id}}">
+                    <input class="card-input" value = "{{$card->card_description}}">
+                    <button class="remove-button">Edytuj Kartę</button>
+                    <button type="button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Usuń Kartę</button>
                 </div>
             </div>
+            @endforeach
+            @foreach($set->getAllCardsType(True) as $card)
+            <div class="card-container">
+                <div class="card-black" id="card{{$card->id}}">
+                    <input class="card-input" value = "{{$card->card_description}}">
+                    <button class="remove-button">Edytuj Kartę</button>
+                    <button type="button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Usuń Kartę</button>
+                </div>
+            </div>
+            @endforeach
+        </section>
+        </div>
     </div>
-</x-app-layout>
 <script>
     function removeCard(setId, cardId) {
         var confirmRemove = confirm("Are you sure you want to remove this card?");
@@ -87,8 +67,8 @@
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         // Remove the card from the UI
-                        var cardElement = document.getElementById(`card-type${cardId}`).closest('.form-group-m');
-                        cardElement.parentNode.removeChild(cardElement);
+                        var cardElement = document.getElementById(`card${cardId}`);
+                        cardElement.remove();
                     } else {
                         // Handle the error case
                         console.error('Error removing card:', xhr.responseText);
@@ -99,3 +79,4 @@
         }
     }
 </script>
+@endsection
