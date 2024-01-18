@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Set;
+use App\Models\User;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SetController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\LobbyController;
-use App\Http\Controllers\SetController;
-use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,14 +23,22 @@ Route::view('/', 'welcome');
 Route::get('lobbies', [LobbyController::class, 'index'])
 ->name('lobbies');
 
-Route::get('lobbies/create', [LobbyController::class, 'create'])
+Route::get('lobbies/create/{id}', [LobbyController::class, 'create'])
 ->name('lobbies/create');
 
-Route::post('lobbies/store', [LobbyController::class, 'store'])
+Route::get('lobbies/create_temp', [LobbyController::class, 'create_temp'])
+->name('lobbies/create_temp');
+
+Route::post('lobbies/store/{id}', [LobbyController::class, 'store'])
 ->name('lobbies/store');
 
-Route::get('lobby/{id}', [LobbyController::class, 'show'])
+Route::get('lobby/{id}', [LobbyController::class, 'create'])
 ->name('lobby');
+
+Route::post('lobby/update/{id}', [LobbyController::class, 'update'])
+->name('lobby/update');
+
+Route::get('/search-set', 'App\Http\Controllers\SetController@search')->name('search-set');
 
 
 Route::get('sets', [SetController::class, 'index'])
@@ -53,11 +63,22 @@ Route::get('sets/create', [SetController::class, 'create'])
 Route::post('sets/store', [SetController::class, 'store'])
 ->name('sets/store');
 
+Route::delete('lobbies/{lobbyId}/sets/{setId}', [LobbyController::class, 'removeSet'])
+->name('lobbies.sets.remove');
+
 Route::delete('/sets/{setId}/cards/{cardId}', [SetController::class, 'removeCard'])->name('cards.remove');
 
-Route::view('dashboard', 'dashboard')
+Route::view('dashboard', 'dashboard', ['sets' => Set::getPopularSets(3)])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+
+Route::get('profile/{id}', function($id){
+    return view("profile_other",[
+       'user' => User::find($id) 
+    ]);
+})
+->name('profile/');
 
 Route::view('profile', 'profile')
     ->middleware(['auth'])

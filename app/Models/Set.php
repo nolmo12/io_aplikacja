@@ -48,11 +48,14 @@ class Set extends Model
         return $cards;
     }
 
+    public function lobbies()
+    {
+        return $this->belongsToMany(Lobby::class);
+    }
+
     public static function getSetByReferenceCode(string $code)
     {
-        $sets = DB::table('sets')
-        ->where('reference_code', $code)
-        ->first();
+        $sets = Set::where('reference_code', $code)->first();
         return $sets;
     }
 
@@ -65,8 +68,21 @@ class Set extends Model
         return $sets;
     }
 
-    public function lobbies()
+    public static function getPopularSets(int $limit = 5)
     {
-        return $this->belongsToMany(Lobby::class);
+        $sets = DB::table('sets')
+        ->orderBy('used_times')
+        ->limit($limit)
+        ->get();
+        return $sets;
+    }
+
+    public static function getRecentSets()
+    {
+        $sets = DB::table('sets')
+        ->orderBy('added_time')
+        ->limit(5)
+        ->get();
+        return $sets;
     }
 }

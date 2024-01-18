@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\SetUpdated;
 use App\Models\Card;
+use App\Models\Lobby;
 use App\Models\Set;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +15,8 @@ class SetController extends Controller
     public function index()
     {
         return view("sets.index", [
-            'sets' => Set::all()
+            'popular_sets' => Set::getPopularSets(),
+            'recent_sets' => Set::getRecentSets(),
         ]);
     }
     //Show single tournament
@@ -154,5 +157,24 @@ class SetController extends Controller
         return view("sets.show_own_sets",[
             'sets' => Set::getAllUserSets($id),
         ]);
+    }
+
+    public function search(Request $request)
+    {
+        $lobby = Lobby::find($request->input('lobby_id'));
+    
+        if ($lobby->sets()->where('reference_code', $request->input('query'))->first()) {
+            return response()->json(['message' => 'Set already exists in the lobby.']);
+        } else {
+            $set = Set::getSetByReferenceCode($request->input('query'));
+    
+            if ($set) {
+                // Use attach to add an existing set to the lobby's sets
+                $lobby->sets()->attach($set);
+    
+                // Broadcast the event
+                broadcast(new SetUpdated($lobby->id, $lobby->sets,'Set added to the lobby successfully.'));
+            }
+        }
     }
 }

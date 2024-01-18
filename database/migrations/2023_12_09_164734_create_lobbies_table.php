@@ -19,6 +19,8 @@ return new class extends Migration
             $table->integer('max_players')->default(10);
             $table->integer('current_round')->default(0);
             $table->integer('max_rounds')->default(8);
+            $table->string('password')->default('');
+            $table->bigInteger('round_timer')->default(30000);
             $table->foreignIdFor(Card::class);
             $table->foreignIdFor(User::class)->constrained();
             $table->timestamps();

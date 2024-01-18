@@ -16,6 +16,8 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('reference_code')->unique();
+            $table->dateTime('added_time')->default(date('Y-m-d H:i:s'));
+            $table->integer('used_times')->default(0);
             $table->foreignIdFor(User::class)->constrained();
             $table->timestamps();
         });
