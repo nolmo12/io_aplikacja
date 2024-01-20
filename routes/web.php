@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SetController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\LobbyController;
+use App\Models\Player;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +21,14 @@ use App\Http\Controllers\LobbyController;
 
 Route::view('/', 'welcome');
 
+Route::get('user/{id}', function($id){
+    return User::find($id);
+});
+
+Route::get('player/{id}', function($id){
+    return Player::find($id);
+});
+
 Route::get('lobbies', [LobbyController::class, 'index'])
 ->name('lobbies');
 
@@ -32,6 +41,9 @@ Route::get('lobbies/create_temp', [LobbyController::class, 'create_temp'])
 Route::post('lobbies/store/{id}', [LobbyController::class, 'store'])
 ->name('lobbies/store');
 
+Route::post('lobbies/join/{id}', [LobbyController::class, 'join'])
+->name('lobbies/create');
+
 Route::get('lobby/{id}', [LobbyController::class, 'create'])
 ->name('lobby');
 
@@ -39,7 +51,6 @@ Route::post('lobby/update/{id}', [LobbyController::class, 'update'])
 ->name('lobby/update');
 
 Route::get('/search-set', 'App\Http\Controllers\SetController@search')->name('search-set');
-
 
 Route::get('sets', [SetController::class, 'index'])
 ->name('sets');
@@ -65,6 +76,9 @@ Route::post('sets/store', [SetController::class, 'store'])
 
 Route::delete('lobbies/{lobbyId}/sets/{setId}', [LobbyController::class, 'removeSet'])
 ->name('lobbies.sets.remove');
+
+Route::delete('lobbies/{lobbyId}/player/{playerId}', [LobbyController::class, 'removePlayer'])
+->name('lobbies.player.remove');
 
 Route::delete('/sets/{setId}/cards/{cardId}', [SetController::class, 'removeCard'])->name('cards.remove');
 

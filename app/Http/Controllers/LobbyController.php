@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PlayerDeleted;
+use App\Events\PlayersUpdated;
+use App\Events\SetUpdated;
 use App\Models\Lobby;
 use App\Models\Player;
 use App\Models\Set;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,8 +47,8 @@ class LobbyController extends Controller
 
         $player = new Player;
 
-        $player->user_id = Auth::user()->id;
-        $player->lobby_id = $lobby->id;
+        $player->user()->associate(Auth::user());
+        $player->lobby()->associate($lobby);
         $player->current_points = 0;
         $player->is_judge = False;
         
@@ -65,20 +69,20 @@ class LobbyController extends Controller
         if($playerCount < 3)
             return redirect('lobby/'.$lobby->id)->with('status', 'Za mało graczy by rozpocząć rozgrywkę');
 
-        if(count($lobby->getAllQuestionCards()) > $minQuestionCards)
+        if(count($lobby->getAllQuestionCards()) < $minQuestionCards)
             return redirect('lobby/'.$lobby->id)->with('status', 'Za mało kart pytań. Brakuję: '.$minQuestionCards - count($lobby->getAllQuestionCards()));
 
-        if(count($lobby->getAllQuestionCards()) > $minAnswerCards)
-            return redirect('lobby/'.$lobby->id)->with('status', 'Za mało kart odpowiadających Brakuję: '.$minAnswerCards - count($lobby->getAllAnswerCards()));
+        if(count($lobby->getAllAnswerCards()) < $minAnswerCards)
+            return redirect('lobby/'.$lobby->id)->with('status', 'Za mało kart odpowiedzi Brakuję: '.$minAnswerCards - count($lobby->getAllAnswerCards()));
 
         $lobby->name = $request->lobby_name;
         $lobby->max_players = $request->max_players;
         $lobby->max_rounds = $request->max_rounds;
-        $lobby->card_id = 0;
+        $lobby->card_id = $lobby->getRandomQuestionCard();
         $lobby->user_id = Auth::user()->id;
         $lobby->save();
 
-        return redirect('lobby/'.$lobby->id)->with('status', 'Set: '.$lobby->name.' has been created!');
+        return redirect('lobby/'.$lobby->id)->with('status', 'Lobby: '.$lobby->name.' zostało rozpoczęte!');
     }
 
     public function update(Request $request, $id)
@@ -108,10 +112,49 @@ class LobbyController extends Controller
         if ($set)
         {
             $lobby->sets()->detach($set);
-            return response()->json(['success' => true], 200);
+            broadcast(new SetUpdated($lobby->id, $lobby->sets,'Set removed from lobby succesfully.'));
         } else {
             return response()->json(['error' => 'Set not found'], 404);
         }
+    }
+
+    public function removePlayer($lobbyId, $playerId)
+    {
+        $lobby = Lobby::find($lobbyId);
+        $player = Player::find($playerId);
+
+        if ($player)
+        {
+            broadcast(new PlayerDeleted($player->user->id, $lobby->id));
+            $player->lobby()->dissociate();
+            $player->delete();
+            broadcast(new PlayersUpdated($lobby->id, $lobby->players,'Player removed from lobby succesfully.'));
+        } else {
+            return response()->json(['error' => 'Player not found'], 404);
+        }
+    }
+
+    public function join($lobbyId, Request $request)
+    {
+        $user = User::find($request->user);
+        $lobby = Lobby::find($lobbyId);
+
+        if($lobby->players()->where('user_id', $user->id)->exists())
+        {
+            return redirect('lobby/'.$lobby->id)->with('status', 'Już jesteś w lobby');
+        }
+
+        $player = new Player;
+        $player->user()->associate($user);
+        $player->lobby()->associate($lobby);
+        $player->current_points = 0;
+        $player->is_judge = false;
+
+        $player->save();
+
+        broadcast(new PlayersUpdated($lobby->id, $lobby->getCurrentPlayers(), 'Player joined lobby'));
+
+        return redirect('lobby/'.$lobby->id);
     }
 
 }

@@ -47,15 +47,15 @@ class Lobby extends Model
         });
     }
 
-    private function getAllQuestionCards()
+    public function getAllQuestionCards()
     {
-    $this->load('sets.cards');
+        $this->load('sets.cards');
 
-    return $this->sets->flatMap(function ($set) {
-        return $set->cards->filter(function ($card) {
-            return $card->is_question;
+        return $this->sets->flatMap(function ($set) {
+            return $set->cards->filter(function ($card) {
+                return $card->is_question;
+            });
         });
-    });
     }
 
     public function getRandomAnswerCard()
@@ -72,7 +72,7 @@ class Lobby extends Model
         return 0;
     }
 
-    private function getAllAnswerCards()
+    public function getAllAnswerCards()
     {
         $this->load('sets.cards');
 
@@ -103,6 +103,11 @@ class Lobby extends Model
     public function sets()
     {
         return $this->belongsToMany(Set::class);
+    }
+
+    public function players()
+    {
+        return $this->hasMany(Player::class);
     }
 
 }

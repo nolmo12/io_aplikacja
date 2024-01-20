@@ -13,4 +13,9 @@ class Player extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function lobby()
+    {
+        return $this->belongsTo(Lobby::class);
+    }
 }

@@ -33,6 +33,7 @@
                             <th>Host</tr>
                         </tr>
                         @foreach($lobbies as $lobby)
+                            @if($lobby->card_id != 0)
                                 <tr>
                                     <td><a href="{{ route('lobby', ['id' => $lobby->id]) }}">{{ $lobby->name }}</a></td>
                                     <td>{{ $lobby->countCurrentPlayers() }}/{{ $lobby->max_players }}</td>
@@ -44,9 +45,10 @@
                                         @endif
                                     </td>
                                     <td>{{$lobby->owner->name}}</td>
-                                </tr>                        
-                        </table>                    
+                                </tr>
+                            @endif                                         
                         @endforeach
+                    </table>   
                     @endif  
                 </div>
             </div>

@@ -80,7 +80,7 @@ class Set extends Model
     public static function getRecentSets()
     {
         $sets = DB::table('sets')
-        ->orderBy('added_time')
+        ->orderBy('added_time', 'desc')
         ->limit(5)
         ->get();
         return $sets;

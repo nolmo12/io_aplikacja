@@ -45,6 +45,7 @@ class SetController extends Controller
         $hashids = new Hashids();
         $reference_code = $hashids->encode($set->id, $set->id - 1);
         $set->reference_code = $reference_code;
+        $set->added_time = date('Y-m-d H:i:s');
         $set->save();
         $set->refresh();
         $reference_code = $hashids->encode($set->id, $set->id - 1);
