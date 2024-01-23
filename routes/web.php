@@ -1,12 +1,13 @@
 <?php
 
 use App\Models\Set;
+use App\Models\Card;
 use App\Models\User;
+use App\Models\Player;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SetController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\LobbyController;
-use App\Models\Player;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,18 @@ Route::get('player/{id}', function($id){
     return Player::find($id);
 });
 
+Route::get('card/{id}', function($id){
+    return Card::find($id);
+});
+
+Route::get('card/{player_id}/{card_id}', function($player_id, $card_id){
+    $card = Card::whereHas('players', function ($query) use ($player_id) {
+        $query->where('player_id', $player_id);
+    })->find($card_id);
+
+    return $card;
+});
+
 Route::get('lobbies', [LobbyController::class, 'index'])
 ->name('lobbies');
 
@@ -47,10 +60,35 @@ Route::post('lobbies/join/{id}', [LobbyController::class, 'join'])
 Route::get('lobby/{id}', [LobbyController::class, 'create'])
 ->name('lobby');
 
-Route::post('lobby/update/{id}', [LobbyController::class, 'update'])
-->name('lobby/update');
+Route::get('lobby/data/update/', 'App\Http\Controllers\LobbyController@update')
+->name('lobby/data/update/');
 
-Route::get('/search-set', 'App\Http\Controllers\SetController@search')->name('search-set');
+Route::get('/search-set', 'App\Http\Controllers\SetController@search')
+->name('search-set');
+
+Route::get('lobby/cards/update/', 'App\Http\Controllers\LobbyController@updateCards')
+->name('update-cards');
+
+Route::get('/update-time-remaining/{lobbyId}', 'App\Http\Controllers\LobbyController@updateTimeRemaining')
+->name('update-time-remaining');
+
+Route::get('/check-if-cards-on-table/{lobbyId}', 'App\Http\Controllers\LobbyController@checkIfCardsOnTable')
+->name('check-if-cards-on-table');
+
+Route::delete('lobbies/{lobbyId}/sets/{setId}', [LobbyController::class, 'removeSet'])
+->name('lobbies.sets.remove');
+
+Route::delete('lobbies/{lobbyId}/player/{playerId}', [LobbyController::class, 'removePlayer'])
+->name('lobbies.player.remove');
+
+Route::get('/choose-winning-card', 'App\Http\Controllers\LobbyController@chooseWinningCard')
+    ->name('choose-winning-card');
+
+Route::get('/clear-table', 'App\Http\Controllers\LobbyController@clearTable')
+    ->name('clear-table');
+
+Route::get('/next-judge', 'App\Http\Controllers\LobbyController@nextJudge')
+    ->name('next-judge');
 
 Route::get('sets', [SetController::class, 'index'])
 ->name('sets');
@@ -73,12 +111,6 @@ Route::get('sets/create', [SetController::class, 'create'])
 
 Route::post('sets/store', [SetController::class, 'store'])
 ->name('sets/store');
-
-Route::delete('lobbies/{lobbyId}/sets/{setId}', [LobbyController::class, 'removeSet'])
-->name('lobbies.sets.remove');
-
-Route::delete('lobbies/{lobbyId}/player/{playerId}', [LobbyController::class, 'removePlayer'])
-->name('lobbies.player.remove');
 
 Route::delete('/sets/{setId}/cards/{cardId}', [SetController::class, 'removeCard'])->name('cards.remove');
 

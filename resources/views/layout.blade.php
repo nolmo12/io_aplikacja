@@ -57,7 +57,7 @@ new class extends Component
                 <div class="navbar-container">
                     <div class="logo-container">
                         <a href="{{route('dashboard')}}" class="logo-link">
-                            <img src="{{asset("website_images/logo.png")}}" class="navbar-logo" alt="Logo" />
+                            <img src="{{asset("website_images/Logo.png")}}" class="navbar-logo" alt="Logo" />
                         </a>
                     </div>
             

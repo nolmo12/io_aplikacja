@@ -2,12 +2,16 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Arial', sans-serif;
-  background-color: #f2f2f2;
+  background-color: #20222a;
+}
+h2
+{
+  color:white
 }
 
 #game-room {
+  color:white;
   background-color: #333;
-  color: white;
   font-size: 1rem;
   font-family: Arial, sans-serif;
   width: 70%;
@@ -203,4 +207,294 @@ color:black;
   grid-area: title;
   font-size: 1.5rem;
   text-align: center;
+}
+
+.top{
+  z-index: 0 !important;
+  padding-bottom: 150px;
+  width: 100%;
+  
+}
+
+.empty-div{
+  height: 10vh;
+}
+
+body{
+  overflow: hidden;
+}
+
+#game_layout {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  height: 100vh;
+}
+
+
+#menu-bar {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+}
+
+#player-list {
+  color:black;
+  width: 15%;
+  background-color: #242528;
+  padding: 20px;
+}
+
+#player-list h2 {
+  text-align: center;
+}
+
+#player-list ul {
+  color:black;
+  list-style-type: none;
+  padding: 0;
+}
+.ul_user{
+  color:black;
+  display: flex;
+}
+
+.ul_judge{
+  display: flex;
+}
+.ul_judge li{
+  background-color: yellowgreen !important;
+  color: black !important;
+}
+
+.usr{
+  color:black;
+  width: 75%;
+  margin: 3px;
+}
+.pk{
+  width: 25%;
+  margin: 3px;
+}
+
+#player-list li {
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#user-cards {
+  width: 70%;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+#add-cards {
+  width: 20%;
+  padding: 20px;
+}
+#add-cards h2 {
+  text-align: center;
+  margin: 20px;
+}
+
+#center-area {
+  width: 100%;
+  padding: 20px;
+  background-color: #20222a;
+  text-align: center;
+}
+
+#center-area #user-played-card {
+  margin-bottom: 20px;
+}
+
+.card {
+  display: inline-block;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+#pick-card {
+  width: 20%;
+  padding: 20px;
+}
+
+.card-container-answers {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.cards-list {
+  background-color: #242528;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+}
+
+.card-white {
+  position: relative;
+  width: 150px;
+  height: 250px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 2px solid white;
+  border-radius: 10px;
+  text-align: center;
+  
+}
+
+.card-white:first-child {
+  background-color: white;
+  color: black;
+}
+
+
+.card-black {
+  position: relative;
+  width: 200px;
+  height: 300px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 2px solid white;
+  border-radius: 10px;
+  text-align: center;
+  
+}
+
+.card-black:first-child {
+  background-color: black;
+  color: white;
+}
+
+.remove-button {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 18px;
+  color: white;
+  background-color: #3498db;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.remove-button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+/* i dalsza część */
+#added-cards {
+  width: 80%;
+  padding: 20px;
+  margin: -5px auto;
+  background-color: #3d3d3d;
+  border-radius: 10px;
+  display: flex;
+
+}
+
+.cards-section {
+  height: 50%;
+  width: 100%;
+  margin: auto;
+  border: 8px solid rgb(20, 20, 20);
+  border-radius: 20px;
+  
+  overflow-y: auto;
+}
+
+#game-cards{
+  display: flex;
+}
+
+.cards-section-a {
+  height: 50%;
+  width: 29%;
+  margin: auto;
+  border: 8px solid rgb(20, 20, 20);
+  border-radius: 20px;
+  
+  overflow-y: auto;
+}
+
+.cards-section-b {
+  height: 50%;
+  width: 69%;
+  margin: auto;
+  border: 8px solid rgb(20, 20, 20);
+  border-radius: 20px;
+  
+  overflow-y: auto;
+}
+
+.card-container-small { /* 48% to allow for some margin between cards */
+  margin: 5px; /* 1% margin between card containers */
+  display: inline-block;
+  vertical-align: top;
+}
+
+.card-white,
+.card-black {
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.delete-button {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 8px;
+  background-color: #5d00c7;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#added-cards ::-webkit-scrollbar {
+  width: 10px; /* Szerokość paska przewijania */
+  height: 100px;
+}
+
+/* Styl "kciuka" (thumb) paska przewijania */
+#added-cards ::-webkit-scrollbar-thumb {
+  background-color: #666; /* Kolor paska przewijania */
+  border-radius: 6px; /* Zakrąglenie rogów paska przewijania */
+}
+
+/* Styl tła paska przewijania */
+#added-cards ::-webkit-scrollbar-track {
+  background-color: #333; /* Kolor tła paska przewijania */
+}
+
+.card-white-chosen {
+  position: relative;
+  width: 150px;
+  height: 250px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 2px solid black;
+  border-radius: 10px;
+  text-align: center;
+  background-color: rgb(97, 0, 187);
+  color: rgb(230, 230, 230);
+}
+.card-white-chosen button{
+  display: none;
 }

@@ -19,7 +19,11 @@
                                 $players += $lobby->countCurrentPlayers();
                             }
                         ?>
+                        @if(count($lobbies) == 1)
+                        {{$players}} graczy w {{count($lobbies)}} pokoju</span>
+                        @else
                         {{$players}} graczy w {{count($lobbies)}} pokojach</span>
+                        @endif
                 </div>
                 <div id="room-info">
                     @if(count($lobbies) == 0)
@@ -33,7 +37,7 @@
                             <th>Host</tr>
                         </tr>
                         @foreach($lobbies as $lobby)
-                            @if($lobby->card_id != 0)
+                            @if($lobby->card_id == 0 || $lobby->countCurrentPlayers() == $lobby->max_players)
                                 <tr>
                                     <td><a href="{{ route('lobby', ['id' => $lobby->id]) }}">{{ $lobby->name }}</a></td>
                                     <td>{{ $lobby->countCurrentPlayers() }}/{{ $lobby->max_players }}</td>

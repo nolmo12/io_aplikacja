@@ -9,6 +9,21 @@ class Player extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'is_judge',
+    ];
+
+    public function playRandomCard()
+    {
+        $cards = $this->cards;
+        return $cards->isNotEmpty() ? $cards->random() : null;
+    }
+
+    public function remove($card)
+    {
+        $this->cards()->detach($card->id);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -17,5 +32,10 @@ class Player extends Model
     public function lobby()
     {
         return $this->belongsTo(Lobby::class);
+    }
+
+    public function cards()
+    {
+        return $this->belongsToMany(Card::class);
     }
 }

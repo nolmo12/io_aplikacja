@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignIdFor(Lobby::class)->constrained();
             $table->integer('current_points');
             $table->boolean('is_judge');
+            $table->boolean('was_judge');
             $table->timestamps();
         });
     }

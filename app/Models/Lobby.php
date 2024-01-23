@@ -10,6 +10,36 @@ class Lobby extends Model
 {
     use HasFactory;
 
+    public function nextJudge()
+    {
+        $currentJudge = $this->players()->where('is_judge', true)->first();
+        $player = $this->players()->where('was_judge', false)->first();
+
+        $currentJudge->is_judge = false;
+        $this->save();
+
+        if($player)
+        {
+            $player->is_judge = true;
+            $player->was_judge = true;
+            $this->save();
+        }
+        else
+        {
+            $this->current_round++;
+            if($this->current_round < $this->max_rounds)
+            {
+                $this->players()->update([
+                    'is_judge' => false,
+                    'was_judge' => false,
+                ]);
+                $this->save();
+                $this->nextJudge();
+            }
+        }
+    }
+    
+
     public function countCurrentPlayers()
     {
         $playerCount = DB::table('players')->where('lobby_id', $this->id)->count();
@@ -90,6 +120,45 @@ class Lobby extends Model
         return False;
     }
 
+    public function dealCards($cardsRemaining = 5)
+    {
+        $players = $this->getCurrentPlayers();
+        foreach($players as $player)
+        {
+            if(count($player->cards) < 5)
+            {
+                for($i = 0; $i < $cardsRemaining; $i++)
+                {
+                    $cards = $this->getAllAnswerCards();
+                    $filtered_cards = $cards->filter(function($card){
+                        return  !$this->cards()->wherePivot('card_id', $card->id)->exists();
+                    });
+
+                    $random_card = $filtered_cards->random();
+
+                    $player->cards()->attach($random_card);
+                    $this->addCard($random_card);
+                }  
+            }
+
+        }
+    }
+
+    public function addCard($card)
+    {
+        $this->cards()->attach($card);
+    }
+
+    public function getCurrentQuestionCard()
+    {
+        return Card::find($this->card_id);
+    }
+
+    public function nextRound()
+    {
+        
+    }
+
     public function getUsedCards()
     {
         return $this->cards;
@@ -97,7 +166,8 @@ class Lobby extends Model
 
     public function cards()
     {
-        return $this->belongsToMany(Card::class);
+        return $this->belongsToMany(Card::class)
+        ->withPivot('is_used');
     }
 
     public function sets()
@@ -108,6 +178,11 @@ class Lobby extends Model
     public function players()
     {
         return $this->hasMany(Player::class);
+    }
+
+    public function tableCards()
+    {
+        return $this->hasMany(TableCards::class);
     }
 
 }

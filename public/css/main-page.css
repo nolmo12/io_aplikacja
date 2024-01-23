@@ -1,9 +1,9 @@
 /* strona główna */
 /* _____________ */
 
-html
+body
 {
-  background-color: #20222a
+  background-color: #20222a;
 }
 
 #main-content{

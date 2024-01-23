@@ -2,9 +2,10 @@
 
 use App\Models\Card;
 use App\Models\User;
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use App\Models\Player;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->integer('max_rounds')->default(8);
             $table->string('password')->default('');
             $table->bigInteger('round_timer')->default(30000);
+            $table->bigInteger('time_remaining')->default(30000);
             $table->foreignIdFor(Card::class);
             $table->foreignIdFor(User::class)->constrained();
             $table->timestamps();

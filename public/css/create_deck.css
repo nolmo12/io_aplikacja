@@ -17,12 +17,6 @@
         color: inherit;
 }
 
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f2f2f2;
-    margin: 0;
-}
-
 #editor {
     display: flex;
     flex-direction: column;
@@ -133,5 +127,67 @@ body {
     transform: translateY(-2px);
 }
 
+/* pasek z dodanymi kartami */
+#added-cards {
+    width: 80%;
+    padding: 20px;
+    margin: -5px auto;
+    background-color: #3d3d3d;
+    border-radius: 10px;
+    display: flex;
 
+}
+
+.cards-section {
+    padding: 20px;
+    margin: 20px;
+    height: 350px;
+    width: 50%;
+    border: 8px solid rgb(20, 20, 20);
+    border-radius: 20px;
+    
+    overflow-y: auto;
+}
+
+.card-container-small {
+    width: 48%; /* 48% to allow for some margin between cards */
+    margin: 1%; /* 1% margin between card containers */
+    display: inline-block;
+    vertical-align: top;
+}
+
+.card-white,
+.card-black {
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.delete-button {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 8px;
+    background-color: #ff0000;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#added-cards ::-webkit-scrollbar {
+    width: 10px; /* Szerokość paska przewijania */
+    height: 100px;
+}
+
+/* Styl "kciuka" (thumb) paska przewijania */
+#added-cards ::-webkit-scrollbar-thumb {
+    background-color: #666; /* Kolor paska przewijania */
+    border-radius: 6px; /* Zakrąglenie rogów paska przewijania */
+}
+
+/* Styl tła paska przewijania */
+#added-cards ::-webkit-scrollbar-track {
+    background-color: #333; /* Kolor tła paska przewijania */
+}
 

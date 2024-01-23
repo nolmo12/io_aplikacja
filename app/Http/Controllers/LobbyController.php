@@ -2,14 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\PlayerDeleted;
-use App\Events\PlayersUpdated;
-use App\Events\SetUpdated;
+use App\Models\Set;
+use App\Models\Card;
+use App\Models\User;
 use App\Models\Lobby;
 use App\Models\Player;
-use App\Models\Set;
-use App\Models\User;
+use App\Events\PlayCards;
+use App\Events\LobbyStart;
+use App\Events\SetUpdated;
+use App\Models\TableCards;
+use App\Events\UpdateCards;
+use App\Events\LobbyUpdated;
+use App\Events\UpdatePoints;
 use Illuminate\Http\Request;
+use App\Events\PlayerDeleted;
+use App\Events\PlayersUpdated;
+use App\Events\LobbyUpdateTime;
+use App\Events\RemovePlayerCard;
 use Illuminate\Support\Facades\Auth;
 
 class LobbyController extends Controller
@@ -41,7 +50,6 @@ class LobbyController extends Controller
             return redirect()->route('lobby', ['id' => Lobby::where('name', Auth::user()->name.'s Lobby')->first()->id]);
         $lobby->name = Auth::user()->name.'s Lobby';
         $lobby->user_id = Auth::user()->id;
-        $lobby->round_timer = 1;
         $lobby->card_id = 0;
         $lobby->save();
 
@@ -51,6 +59,7 @@ class LobbyController extends Controller
         $player->lobby()->associate($lobby);
         $player->current_points = 0;
         $player->is_judge = False;
+        $player->was_judge = False;
         
         $player->save();
 
@@ -78,30 +87,47 @@ class LobbyController extends Controller
         $lobby->name = $request->lobby_name;
         $lobby->max_players = $request->max_players;
         $lobby->max_rounds = $request->max_rounds;
-        $lobby->card_id = $lobby->getRandomQuestionCard();
+        $random_card = $lobby->getRandomQuestionCard();
+        $lobby->card_id = $random_card->id;
+        $lobby->cards()->attach($random_card);
         $lobby->user_id = Auth::user()->id;
         $lobby->save();
+
+        broadcast(new LobbyUpdated($lobby->id, $lobby->name, $lobby->round_timer, $lobby->max_rounds, $lobby->max_players));
+        $players = $lobby->getCurrentPlayers();
+
+        $judge = $players->random();
+
+        $judge->is_judge = true;
+        $judge->was_judge = true;
+        $judge->save();
+        $lobby->howManyJudges = 0;
+
+        $lobby->dealCards();
+        $lobby->time_remaining = $lobby->round_timer;
+        $lobby->current_round = 1;
+        $lobby->save();
+
+        broadcast(new LobbyStart($lobby->id));
 
         return redirect('lobby/'.$lobby->id)->with('status', 'Lobby: '.$lobby->name.' zostało rozpoczęte!');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         // Assuming you have a Lobby model
-        $lobby = Lobby::find($id);
+        $lobby = Lobby::find($request->input('lobby_id'));
 
         if (!$lobby) {
             return response()->json(['error' => 'Lobby not found'], 404);
         }
-
-        // Update the round timer value based on the input from the AJAX request
-        $lobby->round_timer = $request->input('turn_time') * 1000;
+        $lobby->name = $request->input('query.lobby-name');
+        $lobby->round_timer = $request->input('query.turn-time') * 1000;
+        $lobby->max_rounds = $request->input('query.max-rounds');
+        $lobby->max_players = $request->input('query.max-players');
         $lobby->save();
 
-        // You can also refresh the lobby and send updated data back to the client if needed
-        $lobby->refresh();
-
-        return response()->json(['success' => true, 'updated_timer' => $lobby->round_timer]);
+        broadcast(new LobbyUpdated($lobby->id, $lobby->name, $lobby->round_timer, $lobby->max_rounds, $lobby->max_players));
     }
 
     public function removeSet($lobbyId, $setId)
@@ -144,17 +170,145 @@ class LobbyController extends Controller
             return redirect('lobby/'.$lobby->id)->with('status', 'Już jesteś w lobby');
         }
 
+        if($lobby->countCurrentPlayers() + 1 > $lobby->max_players)
+        {
+            return redirect('lobby/'.$lobby->id)->with('status', 'Lobby jest pełne');
+        }
+
         $player = new Player;
         $player->user()->associate($user);
         $player->lobby()->associate($lobby);
         $player->current_points = 0;
         $player->is_judge = false;
+        $player->was_judge = false;
 
         $player->save();
 
         broadcast(new PlayersUpdated($lobby->id, $lobby->getCurrentPlayers(), 'Player joined lobby'));
 
         return redirect('lobby/'.$lobby->id);
+    }
+
+    public function updateCards(Request $request)
+    {
+        $lobby = Lobby::find($request->input('lobby_id'));
+        $card = Card::find($request->inpit('card_id'));
+        $lobby->addCard($card);
+    }
+
+    public function updateTimeRemaining($lobbyId)
+    {
+        $lobby = Lobby::findOrFail($lobbyId);
+        $lobby->time_remaining -= 1000;
+        broadcast(new LobbyUpdateTime($lobby->id, $lobby->time_remaining));
+    }
+
+    public function checkIfCardsOnTable($lobby_id)
+    {
+        $lobby = Lobby::find($lobby_id);
+        $playersWithNoCards = [];
+
+        $players = $lobby->getCurrentPlayers()
+                    ->filter(function (Player $player){
+                        return !$player->is_judge;
+                    });
+    
+        foreach ($players as $player)
+        {
+            $cardsOnTable = TableCards::where('lobby_id', $lobby_id)
+                ->where('player_id', $player->id)
+                ->count();
+    
+            if ($cardsOnTable == 0) {
+                $playersWithNoCards[] = $player;
+            }
+        }
+
+        $playedCards = [];
+
+        foreach ($playersWithNoCards as $playerWithoutCards) 
+        {
+            $card = $playerWithoutCards->playRandomCard();
+        
+            $tableCard = new TableCards([
+                'lobby_id' => $lobby->id,
+                'player_id' => $playerWithoutCards->id,
+                'card_id' => $card->id,
+            ]);
+
+            $lobby->cards()->attach($card);
+    
+            $playerWithoutCards->remove($card);
+
+            broadcast(new RemovePlayerCard($lobby->id, $playerWithoutCards->id, $card->id));
+            
+            $tableCard->save();
+        
+            $playedCards[] = [
+                'id' => $card->id,
+                'card_description' => $card->card_description,
+            ];
+        }
+
+        broadcast(new PlayCards($lobby->id, $playedCards));
+
+        $howManyCardsToAdd = 1;
+
+        foreach($players as $player)
+        {
+            if(count($player->cards) < 5)
+            {
+                for($i = 0; $i < $howManyCardsToAdd; $i++)
+                {
+                    $cards = $lobby->getAllAnswerCards();
+                    $filtered_cards = $cards->filter(function($card) use ($lobby){
+                        return  !$lobby->cards()->wherePivot('card_id', $card->id)->exists();
+                    });
+
+                    $random_card = $filtered_cards->random();
+
+                    $player->cards()->attach($random_card);
+                    $lobby->addCard($random_card);
+
+                    broadcast(new UpdateCards($lobby->id, $random_card->id, $player->id));
+                }  
+            }
+
+        }
+    }
+
+    public function chooseWinningCard(Request $request)
+    {
+        $lobby_id = $request->input('lobby_id');
+        $card_id = $request->input('card_id');
+        $lobby = Lobby::find($lobby_id);
+        $card = Card::find($card_id);
+
+        $table = TableCards::find($card_id);
+
+        $player = Player::find($table->player_id);
+
+        if($player)
+        {
+            $player->current_points++;
+            $player->save();
+            broadcast(new UpdatePoints($lobby->id, $player->id, $player->current_points));
+        }
+    }
+
+    public function clearTable(Request $request)
+    {
+        $lobby = Lobby::find($request->input('lobby_id'));
+
+        $lobby->tableCards()->delete();
+    }
+
+    public function nextJudge(Request $request)
+    {
+        $lobby = Lobby::find($request->input('lobby_id'));
+        $lobby->nextJudge();
+        $players = $lobby->players;
+        return $players;
     }
 
 }

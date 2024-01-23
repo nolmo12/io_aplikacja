@@ -35,24 +35,33 @@
                 </div>
             </section>
             <section>
-            @foreach($set->getAllCardsType(False) as $card)
-                <div class="card-white" id="card{{$card->id}}">
-                    <input class="card-input" value = "{{$card->card_description}}">
-                    <button class="remove-button">Edytuj Kartę</button>
-                    <button type="button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Usuń Kartę</button>
-                </div>
-            </div>
-            @endforeach
-            @foreach($set->getAllCardsType(True) as $card)
-            <div class="card-container">
-                <div class="card-black" id="card{{$card->id}}">
-                    <input class="card-input" value = "{{$card->card_description}}">
-                    <button class="remove-button">Edytuj Kartę</button>
-                    <button type="button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Usuń Kartę</button>
-                </div>
-            </div>
-            @endforeach
         </section>
+        </div>
+    </div>
+    <div id="added-cards">
+        <div id="white-cards-section" class="cards-section">
+            <section class="cards-list">
+                    @foreach($set->getAllCardsType(False) as $card)
+                    <div class="card-container-small">
+                    <div class="card-white" id="card{{$card->id}}">
+                        <input class="card-input" value = "{{$card->card_description}}">
+                        <button class="delete-button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Usuń kartę</button>
+                    </div>
+                </div>
+                @endforeach
+            </section>
+        </div>
+        <div id="black-cards-section" class="cards-section">
+            <section class="cards-list">
+                    @foreach($set->getAllCardsType(True) as $card)
+                    <div class="card-container-small">
+                    <div class="card-black" id="card{{$card->id}}">
+                        <input class="card-input" value = "{{$card->card_description}}">
+                        <button class="delete-button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Usuń kartę</button>
+                    </div>
+                </div>
+                @endforeach
+            </section>
         </div>
     </div>
 <script>
