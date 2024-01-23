@@ -101,7 +101,6 @@ class LobbyController extends Controller
         $judge->is_judge = true;
         $judge->was_judge = true;
         $judge->save();
-        $lobby->howManyJudges = 0;
 
         $lobby->dealCards();
         $lobby->time_remaining = $lobby->round_timer;
