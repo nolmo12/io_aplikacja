@@ -22,3 +22,37 @@
     #top button:hover {
     background-color: #0703ca; /* Ciemniejsza zieleń po najechaniu */
 }
+
+#layout{
+    display: flex;
+}
+
+#left{
+    width: 10%;
+    display: flex;
+    flex-direction: column;
+    border-right: 3px solid black;
+}
+
+#left button{
+    background-color: #6d00b6; /* Zielone tło */
+    
+    color: white; /* Biały tekst */
+    padding: 10px 20px; /* Odstępy */
+    margin: auto;
+    margin: 13px;
+    margin-right: 15px;
+    height: 60px;
+    width: 85%;
+    border: none; /* Brak obramowania */
+    border-radius: 5px; /* Zaokrąglone rogi */
+    font-size: 16px; /* Rozmiar czcionki */
+    }
+
+    #left button:hover {
+    background-color: #0703ca; /* Ciemniejsza zieleń po najechaniu */
+}
+
+.right{ 
+    width: 90%;
+}

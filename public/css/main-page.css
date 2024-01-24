@@ -44,9 +44,9 @@ section {
   flex-wrap: wrap;
   justify-content: space-around;
  }
+
 /* wyświetlanie karty jako tło i dostosowanie tekstu do tego diva */
 .card-container {
-  width: 300px;
   position: relative;
   display: flex;
   justify-content: center;

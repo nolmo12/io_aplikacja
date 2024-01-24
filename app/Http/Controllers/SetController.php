@@ -14,9 +14,31 @@ class SetController extends Controller
 {
     public function index()
     {
+        return view("sets.index");
+    }
+
+    public function popular()
+    {
         return view("sets.index", [
-            'popular_sets' => Set::getPopularSets(),
-            'recent_sets' => Set::getRecentSets(),
+            'title' => '5 Najpopularniejszych talii',
+            'sets' => Set::getPopularSets()
+        ]);
+    }
+
+    public function recent()
+    {
+        return view("sets.index", [
+            'title' => '5 Najnowszych talii',
+            'sets' => Set::getRecentSets()
+        ]);
+    }
+
+    public function all()
+    {
+        return view("sets.index",
+        [
+            'title' => 'Wszystkie talie',
+            'sets' => Set::all()
         ]);
     }
     //Show single tournament
@@ -131,15 +153,18 @@ class SetController extends Controller
         return redirect('sets/edit/'.$id)->with('status', 'Set and cards have been updated!');
     }
 
-    public function removeCard($setId, $cardId)
+    public function removeCard($cardId)
     {
         // Implement the logic to remove the card from the database
         $card = Card::find($cardId);
-
-        if ($card) {
+    
+        if ($card)
+        {
             $card->delete();
             return response()->json(['success' => true], 200);
-        } else {
+        }
+        else 
+        {
             return response()->json(['error' => 'Card not found'], 404);
         }
     }

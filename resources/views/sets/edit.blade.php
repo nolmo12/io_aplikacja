@@ -15,6 +15,9 @@
                   <label for="deck-name-input">Nazwa Talii</label>
                 <input type="text" id="deck-name-input" name="name" required="" value="{{$set->name}}">
             </div>
+            <div class="save-button">
+                <button>Zapisz</button>
+            </div>
             <span id="editor-title">Edytor Talii</span>
         </div>
 
@@ -45,7 +48,7 @@
                     <div class="card-container-small">
                     <div class="card-white" id="card{{$card->id}}">
                         <input class="card-input" value = "{{$card->card_description}}">
-                        <button class="delete-button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Usuń kartę</button>
+                        <button class="delete-button" type="button" onclick="removeCard('{{ $card->id }}')">Usuń kartę</button>
                     </div>
                 </div>
                 @endforeach
@@ -57,7 +60,7 @@
                     <div class="card-container-small">
                     <div class="card-black" id="card{{$card->id}}">
                         <input class="card-input" value = "{{$card->card_description}}">
-                        <button class="delete-button" onclick="removeCard('{{ $set->id }}', '{{ $card->id }}')">Usuń kartę</button>
+                        <button class="delete-button" type="button" onclick="removeCard({{ $card->id }})">Usuń kartę</button>
                     </div>
                 </div>
                 @endforeach
@@ -65,27 +68,35 @@
         </div>
     </div>
 <script>
-    function removeCard(setId, cardId) {
-        var confirmRemove = confirm("Are you sure you want to remove this card?");
+function removeCard(cardId) {
+    var confirmRemove = confirm("Are you sure you want to remove this card?");
 
-        if (confirmRemove) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('DELETE', '/sets/' + setId + '/cards/' + cardId, true);
-            xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        // Remove the card from the UI
-                        var cardElement = document.getElementById(`card${cardId}`);
-                        cardElement.remove();
+    if (confirmRemove) {
+        var xhr = new XMLHttpRequest();
+        var url = '/remove/cards/' + cardId;  // Adjust the URL to match your route
+        xhr.open('DELETE', url, true);
+        xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    // Remove the card from the UI
+                    var cardElement = document.getElementById(`card${cardId}`);
+                    if (cardElement) {
+                        location.reload();
                     } else {
-                        // Handle the error case
-                        console.error('Error removing card:', xhr.responseText);
+                        console.error('Error removing card: Element not found in the UI.');
                     }
+                } else {
+                    // Handle the error case
+                    console.error('Error removing card:', xhr.status, xhr.responseText);
                 }
-            };
-            xhr.send();
-        }
+            }
+        };
+
+        xhr.send();
     }
+}
+
 </script>
 @endsection

@@ -33,7 +33,7 @@ new class extends Component
         @if(request()->routeIs('lobby'))
         <link href="{{ URL::asset('css/create-lobby.css') }}" rel="stylesheet"/>
         @endif
-        @if(request()->routeIs('sets'))
+        @if(request()->routeIs('sets') || request()->routeIs('sets/popular') || request()->routeIs('sets/recent') || request()->routeIs('sets/all') || request()->routeIs('sets/user='))
         <link href="{{ URL::asset('css/deck-of-cards.css') }}" rel="stylesheet"/>
         @endif
         @if(request()->routeIs('profile/'))

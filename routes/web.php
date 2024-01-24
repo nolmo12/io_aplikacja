@@ -100,6 +100,15 @@ Route::get('show-winner', 'App\Http\Controllers\LobbyController@showWinner')
 Route::get('sets', [SetController::class, 'index'])
 ->name('sets');
 
+Route::get('sets/popular', [SetController::class, 'popular'])
+->name('sets/popular');
+
+Route::get('sets/recent', [SetController::class, 'recent'])
+->name('sets/recent');
+
+Route::get('sets/all', [SetController::class, 'all'])
+->name('sets/all');
+
 Route::get('set/{id}', [SetController::class, 'show'])
 ->name('set');
 
@@ -119,7 +128,7 @@ Route::get('sets/create', [SetController::class, 'create'])
 Route::post('sets/store', [SetController::class, 'store'])
 ->name('sets/store');
 
-Route::delete('/sets/{setId}/cards/{cardId}', [SetController::class, 'removeCard'])->name('cards.remove');
+Route::DELETE('/remove/cards/{cardId}', [SetController::class, 'removeCard'])->name('cards.remove');
 
 Route::view('dashboard', 'dashboard', ['sets' => Set::getPopularSets(3)])
     ->middleware(['auth', 'verified'])
