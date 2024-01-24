@@ -32,24 +32,22 @@ class BroadcastUpdateTime extends Command
         $lobbies = Lobby::all();
     
         foreach ($lobbies as $lobby) {
-            if ($lobby->time_remaining > 0) {
-                if ($lobby->time_remaining - 1000 <= 0) {
+            if ($lobby->time_remaining > 0)
+            {
+                if ($lobby->time_remaining - 1000 <= 0) 
+                {
                     $lobby->time_remaining = 0;
-    
-                    // Optionally, you can perform additional actions when time_remaining reaches zero
-                    // ...
-    
-                } else {
+                }
+                else
+                {
                     $lobby->time_remaining -= 1000;
                 }
     
-                $lobby->save(); // Save the updated time_remaining to the database
-    
-                // Broadcast the LobbyUpdateTime event
+                $lobby->save();
                 broadcast(new LobbyUpdateTime($lobby->id, $lobby->time_remaining));
     
-                if ($lobby->time_remaining === 0) {
-                    // Fire event when time_remaining reaches zero
+                if ($lobby->time_remaining === 0)
+                {
                     broadcast(new LobbyTimeReachedZero($lobby->id));
                 }
             }

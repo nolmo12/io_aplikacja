@@ -151,7 +151,24 @@
 </div>  
 </form>
 @else
-
+<div id="info" class="hidden">
+  <div class="container">
+      <h1>Nazwa Użytkownika</h1>
+  </div>
+      <div class="container">
+          <h3>Wygrała karta:</h3>
+          <section class="cards-list">
+              <div class="card-container-small">
+                  <div class="card-white">
+                      <p class="card-text">Karta 1</p>
+                  </div>
+              </div>
+          </section>
+      </div>
+  <div class="container">
+      Powrót do gry za: 5
+  </div>
+</div>
 <div class="top">
   &#8203;
   </div>
@@ -159,7 +176,7 @@
   <div id="game_layout">
       <div id="player-list">
           <h2>Lista Graczy</h2>
-          <ul>
+          <ul id="game-player-list">
             @foreach($lobby->getCurrentPlayers() as $player)
               @if($player->is_judge == True)
               <ul class = "ul_judge">
@@ -197,7 +214,7 @@
                           <div class="card-container-small">
                               <div class="card-white">
                                   <p class="card-text">{{$played_card->card->card_description}}</p>
-                                  @if(auth()->user()->player->is_judge == True)
+                                  @if(auth()->user()->player->is_judge == True && $lobby->time_remaining == 0)
                                   <button data-card-id="{{ $played_card->id }}" class="delete-button">Wybierz</button>
                                   @endif
                               </div>
@@ -210,15 +227,24 @@
               <h2>Twoje Karty</h2>
               <div id="white-cards-section" class="cards-section">
                   <section class="cards-list" id="user-cards">
-                   @foreach(auth()->user()->player->cards as $card)
-                    <div class="card-container-small" id = "{{$card->id}}">
-                      <div class="card-white">
-                          <p class="card-text">{{$card->card_description}}</p>
-                          @if(auth()->user()->player->is_judge == False && $lobby->time_remaining > 0)
-                            <button class="delete-button" onclick="chooseCart('{{$card->id}}')">Wybierz</button>
-                          @endif
-                      </div>
-                    </div>
+                    @php
+                    $userId = auth()->user()->id;
+                    $tableCardUserIds = $lobby->tableCards->pluck('player_id')->toArray();
+                    @endphp
+                    
+                    @foreach(auth()->user()->player->cards as $card)
+                        <div class="card-container-small" id="{{ $card->id }}">
+                            <div class="card-white">
+                                <p class="card-text">{{ $card->card_description }}</p>
+                                @if(
+                                    auth()->user()->player->is_judge == false &&
+                                    $lobby->time_remaining > 0 &&
+                                    !in_array($userId, $tableCardUserIds)
+                                )
+                                    <button class="card-button" data-card-id="{{ $card->id }}">Wybierz</button>
+                                @endif
+                            </div>
+                        </div>
                     @endforeach
                   </section>
               </div>
@@ -228,6 +254,20 @@
 
 @endif
 <script>
+
+function addCardToTable(cardTable)
+{
+
+  $.ajax({
+            type: 'GET',
+            url: "{{ url('card') }}/" + cardTable.card_id,
+            success: function (retrievedCard) {
+              var cardContainer = $('<div class="card-container-small"> <div class="card-white"> <p class="card-text">' + retrievedCard.card_description + '</p></div></div>');
+              $('#table').append(cardContainer);
+            }
+});  
+}
+
   function toggleInput() {
       var inputContainer = document.getElementById("inputContainer");
 
@@ -331,6 +371,7 @@
 }
 
 function updatePlayersDuringGame(players) {
+    console.log('xd');
     $('#players-list').empty();
     $('#players-list').append('Lista graczy')
 
@@ -398,6 +439,12 @@ function freezeRound(lobby_data)
   });
 }
 
+// function updatePlayersDuringGame()
+// {
+//   var lobby = {{$lobby->id}};
+//   $('#game-player-list').empty();
+// }
+
 function refreshCards(player_id, card_id) {
     $.ajax({
         type: 'GET',
@@ -425,7 +472,7 @@ function revealCards(cards) {
                 @if(auth()->user()->player)
                   var isJudge = {{ auth()->user()->player->is_judge }};
                   if (isJudge) {
-                    var button = $('<button data-card-id="' + card.id + '" class="delete-button">Wybierz</button>');
+                    var button = $('<button data-card-id="' + card.table_card_id + '" class="delete-button">Wybierz</button>');
                     cardContainer.find('.card-white').append(button);
                   }
                 @endif
@@ -444,22 +491,6 @@ function updatePoints(playerId, points)
   $('#player'+playerId).text(points);
 }
 
-function showWinningCard()
-{
-
-}
-function selectNextJudge(player_id)
-{
-  var lobby = {{$lobby->id}};
-  $.ajax({
-            type: 'GET',
-            url: "{{ route('next-judge') }}", // Wrap the route function in quotes
-            data: { lobby_id : lobby },
-            success: function(players){
-              updatePlayersDuringGame(players)
-            }
-        });
-}
 function clearTable()
 {
   var lobby = {{$lobby->id}};
@@ -475,6 +506,38 @@ function removeCard(card)
 {
   $('#'+card).remove();
 }
+
+$(document).ready(function () {
+    var lobby = {{$lobby->id}};
+    @if(auth()->user()->player)
+    var player = {{auth()->user()->player->id}};
+    @endif
+    var isEventAllowed = true;
+
+    $('.card-button').on('click', function () {
+      $('#user-cards').find('button').remove();
+      if (isEventAllowed) {
+            var cardId = $(this).data('card-id');
+
+            // Send an AJAX request to the server
+            $.ajax({
+                type: 'GET',
+                url: '{{ route('choose-card') }}',
+                data: { card_id: cardId, lobby_id: lobby, player_id: player },
+                beforeSend: function () {
+                    // Disable the button during the AJAX request
+                    isEventAllowed = false;
+                },
+                complete: function () {
+                    // Enable the button after the request is complete
+                    setTimeout(function () {
+                        isEventAllowed = true;
+                    }, 2500); // Adjust the cooldown period as needed
+                },
+            });
+          }
+    });
+  });
 
 $(document).ready(function () {
     var lobby = {{$lobby->id}};
@@ -671,14 +734,26 @@ channel.bind('App\\Events\\UpdateCards', function(data) {
         refreshCards(data.player_id, data.card_id);
     }
   @endif
+  location.reload();
 });
 
 channel.bind('App\\Events\\UpdatePoints', function(data) {
-  showWinningCard(data.card_id)
   updatePoints(data.player_id, data.points);
   clearTable();
-  selectNextJudge(data.player_i);
 });
+
+channel.bind('App\\Events\\UpdateJudge', function(data) {
+  location.reload();
+});
+
+channel.bind('App\\Events\\AddSingleCard', function(data) {
+  addCardToTable(data.card_table);
+});
+
+channel.bind('App\\Events\\EndGame', function(data) {
+    window.location.href = "{{ route('show-winner') }}?user_name=" + data.user_name + "&points=" + data.points;
+});
+
 
 </script> 
 @endsection

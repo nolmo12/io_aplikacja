@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Player;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SetController;
+use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\LobbyController;
 
@@ -87,8 +88,14 @@ Route::get('/choose-winning-card', 'App\Http\Controllers\LobbyController@chooseW
 Route::get('/clear-table', 'App\Http\Controllers\LobbyController@clearTable')
     ->name('clear-table');
 
-Route::get('/next-judge', 'App\Http\Controllers\LobbyController@nextJudge')
-    ->name('next-judge');
+Route::get('/get-judge', 'App\Http\Controllers\LobbyController@getJudge')
+    ->name('get-judge');
+
+Route::get('/choose-card', 'App\Http\Controllers\LobbyController@chooseCard')
+    ->name('choose-card');
+
+Route::get('show-winner', 'App\Http\Controllers\LobbyController@showWinner')
+    ->name('show-winner');
 
 Route::get('sets', [SetController::class, 'index'])
 ->name('sets');

@@ -9,35 +9,7 @@ use Illuminate\Support\Facades\DB;
 class Lobby extends Model
 {
     use HasFactory;
-
-    public function nextJudge()
-    {
-        $currentJudge = $this->players()->where('is_judge', true)->first();
-        $player = $this->players()->where('was_judge', false)->first();
-
-        $currentJudge->is_judge = false;
-        $this->save();
-
-        if($player)
-        {
-            $player->is_judge = true;
-            $player->was_judge = true;
-            $this->save();
-        }
-        else
-        {
-            $this->current_round++;
-            if($this->current_round < $this->max_rounds)
-            {
-                $this->players()->update([
-                    'is_judge' => false,
-                    'was_judge' => false,
-                ]);
-                $this->save();
-                $this->nextJudge();
-            }
-        }
-    }
+    protected $fillable = ['time_remaining'];
     
 
     public function countCurrentPlayers()
@@ -142,6 +114,17 @@ class Lobby extends Model
             }
 
         }
+    }
+
+    public function getBestPlayer()
+    {
+        $players = $this->getCurrentPlayers();
+        
+        $bestPlayer = Player::where('lobby_id', $this->id)
+        ->orderByDesc('current_points')
+        ->first();
+        
+        return $bestPlayer;
     }
 
     public function addCard($card)

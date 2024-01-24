@@ -2,24 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use Log;
 use App\Models\Set;
 use App\Models\Card;
 use App\Models\User;
 use App\Models\Lobby;
 use App\Models\Player;
+use App\Events\EndGame;
 use App\Events\PlayCards;
 use App\Events\LobbyStart;
 use App\Events\SetUpdated;
 use App\Models\TableCards;
 use App\Events\UpdateCards;
+use App\Events\UpdateJudge;
 use App\Events\LobbyUpdated;
 use App\Events\UpdatePoints;
 use Illuminate\Http\Request;
+use App\Events\AddSingleCard;
 use App\Events\PlayerDeleted;
 use App\Events\PlayersUpdated;
 use App\Events\LobbyUpdateTime;
 use App\Events\RemovePlayerCard;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class LobbyController extends Controller
 {
@@ -245,6 +250,7 @@ class LobbyController extends Controller
         
             $playedCards[] = [
                 'id' => $card->id,
+                'table_card_id' => $tableCard->id,
                 'card_description' => $card->card_description,
             ];
         }
@@ -276,6 +282,22 @@ class LobbyController extends Controller
         }
     }
 
+    public function chooseCard(Request $request)
+    {
+        $lobby = Lobby::find($request->input('lobby_id'));
+        $player = Player::find($request->input('player_id'));
+        $card = Card::find($request->input('card_id'));
+        $player->remove($card);
+        $tableCard = new TableCards([
+            'lobby_id' => $lobby->id,
+            'player_id' => $player->id,
+            'card_id' => $card->id,
+        ]);
+        $tableCard->save();
+        broadcast(new AddSingleCard($lobby->id, $tableCard));
+        broadcast(new RemovePlayerCard($lobby->id, $player->id, $card->id));
+    }
+
     public function chooseWinningCard(Request $request)
     {
         $lobby_id = $request->input('lobby_id');
@@ -292,6 +314,10 @@ class LobbyController extends Controller
             $player->current_points++;
             $player->save();
             broadcast(new UpdatePoints($lobby->id, $player->id, $player->current_points));
+            $random_card = $lobby->getRandomQuestionCard();
+            $lobby->card_id = $random_card->id;
+            $lobby->cards()->attach($random_card);
+            $this->updateJudge($lobby);
         }
     }
 
@@ -302,12 +328,94 @@ class LobbyController extends Controller
         $lobby->tableCards()->delete();
     }
 
-    public function nextJudge(Request $request)
+    public function getJudge(Request $request)
     {
         $lobby = Lobby::find($request->input('lobby_id'));
-        $lobby->nextJudge();
-        $players = $lobby->players;
-        return $players;
+
+        $currentJudge = $this->updateJudge($lobby);
+
+        return response()->json([
+            'currentJudge' => $currentJudge,
+             'players' => $lobby->getCurrentPlayers(),
+              'timesznyc' => $lobby->time_remaining
+            ]);
+    }
+
+    public function updateJudge(Lobby $lobby)
+    {
+        $currentJudge = $lobby->players()->where('is_judge', true)->first();
+        $player = $lobby->players()->where('was_judge', false)->first();
+
+        if($currentJudge)
+        {
+            $currentJudge->is_judge = false;
+            $currentJudge->save();
+        }
+        if ($player)
+         {
+            $player->is_judge = true;
+            $player->was_judge = true;
+            $player->save();
+        }
+        else 
+        {
+            $lobby->current_round++;
+
+            if ($lobby->current_round <= $lobby->max_rounds)
+            {
+                $lobby->players()->update([
+                    'is_judge' => false,
+                    'was_judge' => false,
+                ]);
+                $lobby->save();
+                $this->updateJudge($lobby);
+            }
+        }
+        if ($lobby->current_round <= $lobby->max_rounds)
+        {
+            $lobby->time_remaining = $lobby->round_timer;
+            $lobby->save();
+        }
+        else
+        {
+            foreach($lobby->getCurrentPlayers() as $player)
+            {
+                $player->cards()->detach();
+                $user = $player->user;
+                $user->games_played++;
+                $user->save();
+            }
+            $winner = $lobby->getBestPlayer();
+            $user = $winner->user;
+            $user->games_won++;
+            $user->save();
+
+            broadcast(new EndGame($lobby->id, $winner->user->name, $winner->current_points));
+
+            $lobby->cards()->detach();
+            $lobby->sets()->detach();
+
+            $request = new Request;
+            $request->merge([
+                'lobby_id' => $lobby->id
+            ]);
+
+            $this->clearTable($request);
+            $lobby->players()->delete();
+            $lobby->delete();
+
+        }
+        broadcast(new UpdateJudge($lobby->id));
+
+        return $currentJudge;
+    }
+
+    public function showWinner(Request $request)
+    {
+        return view("lobbies.end",[
+            'user_name' => $request->input('user_name'),
+            'points' => $request->input('points')
+        ]);
     }
 
 }

@@ -92,7 +92,7 @@ new class extends Component
     <p>Games played: {{__(Auth::user()->games_played)}}
     Gamed won: {{__(Auth::user()->games_won)}}</p>
     @if(Auth::user()->games_played != 0)
-        Winrate: {{__(Auth::user()->games_won)/Auth::user()->games_played}}%
+        Winrate: {{(__(Auth::user()->games_won)/Auth::user()->games_played) * 100}}%
     @else
     Winrate: 0%
     @endif

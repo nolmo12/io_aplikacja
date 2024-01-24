@@ -28,7 +28,7 @@
                 <div class="stat">
                     <p class="stat-label">Win Ratio</p>
                     @if($user->games_played != 0)
-                    <p class="stat-value">{{$user->games_won / $user->games_played}}</p>
+                    <p class="stat-value">{{($user->games_won / $user->games_played) * 100}}</p>
                     @else
                     <p class="stat-value">0%</p>
                     @endif

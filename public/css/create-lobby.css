@@ -467,6 +467,19 @@ body{
   cursor: pointer;
 }
 
+.card-button {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 8px;
+  background-color: #5d00c7;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
 #added-cards ::-webkit-scrollbar {
   width: 10px; /* Szerokość paska przewijania */
   height: 100px;
@@ -497,4 +510,34 @@ body{
 }
 .card-white-chosen button{
   display: none;
+}
+
+#info
+{
+  position:absolute;
+  left: 0;
+  right: 0;
+  width: 40%;
+  margin: auto;
+  z-index: 1000;
+}
+.hidden
+{
+  display:none;
+}
+.visible
+{
+  display:block;
+}
+
+.container {
+  display: flex ;
+  flex-direction: column ;
+  text-align: center;
+  font-size: 30px;
+  background-color: rgba(0, 0, 0, 0.9) !important;
+  color: white;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 25px;
 }
