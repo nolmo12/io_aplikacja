@@ -228,7 +228,7 @@
               <div id="white-cards-section" class="cards-section">
                   <section class="cards-list" id="user-cards">
                     @php
-                    $userId = auth()->user()->id;
+                    $userId = auth()->user()->player->id;
                     $tableCardUserIds = $lobby->tableCards->pluck('player_id')->toArray();
                     @endphp
                     
@@ -426,24 +426,6 @@ function chooseCard(card)
             }
         });
 }
-
-function freezeRound(lobby_data)
-{
-  var lobby = {{$lobby->id}};
-
-  $('#user-cards').find('button').remove();
-
-  $.ajax({
-    type: 'GET',
-    url: "{{ route('check-if-cards-on-table', ['lobbyId' => $lobby->id]) }}",
-  });
-}
-
-// function updatePlayersDuringGame()
-// {
-//   var lobby = {{$lobby->id}};
-//   $('#game-player-list').empty();
-// }
 
 function refreshCards(player_id, card_id) {
     $.ajax({
@@ -713,10 +695,6 @@ channel.bind('App\\Events\\LobbyStart', function(data) {
 
 channel.bind('App\\Events\\LobbyUpdateTime', function(data) {
     $('#time').text("Pozostały czas: " + data.time_remaining / 1000);
-});
-
-channel.bind('App\\Events\\LobbyTimeReachedZero', function(data) {
-    freezeRound(data);
 });
 
 channel.bind('App\\Events\\PlayCards', function(data) {

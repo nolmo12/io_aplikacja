@@ -6,6 +6,7 @@ use App\Models\Lobby;
 use App\Events\LobbyUpdateTime;
 use Illuminate\Console\Command;
 use App\Events\LobbyTimeReachedZero;
+use App\Http\Controllers\LobbyController;
 
 class BroadcastUpdateTime extends Command
 {
@@ -48,7 +49,7 @@ class BroadcastUpdateTime extends Command
     
                 if ($lobby->time_remaining === 0)
                 {
-                    broadcast(new LobbyTimeReachedZero($lobby->id));
+                    LobbyController::checkIfCardsOnTable($lobby->id);
                 }
             }
         }

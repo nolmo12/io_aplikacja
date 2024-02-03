@@ -19,6 +19,12 @@ class Player extends Model
         return $cards->isNotEmpty() ? $cards->random() : null;
     }
 
+    public function countCards(): int
+    {
+        $count = $this->cards()->count();
+        return $count;
+    }
+
     public function remove($card)
     {
         $this->cards()->detach($card->id);

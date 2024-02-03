@@ -23,6 +23,7 @@ use App\Events\PlayerDeleted;
 use App\Events\PlayersUpdated;
 use App\Events\LobbyUpdateTime;
 use App\Events\RemovePlayerCard;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
@@ -207,7 +208,7 @@ class LobbyController extends Controller
         broadcast(new LobbyUpdateTime($lobby->id, $lobby->time_remaining));
     }
 
-    public function checkIfCardsOnTable($lobby_id)
+    public static function checkIfCardsOnTable($lobby_id)
     {
         $lobby = Lobby::find($lobby_id);
         $playersWithNoCards = [];
@@ -256,27 +257,22 @@ class LobbyController extends Controller
         }
 
         broadcast(new PlayCards($lobby->id, $playedCards));
-
-        $howManyCardsToAdd = 1;
-
         foreach($players as $player)
         {
-            if(count($player->cards) < 5)
+            $howManyCardsToAdd = 5 - $player->countCards();
+            for($i = 0; $i < $howManyCardsToAdd; $i++)
             {
-                for($i = 0; $i < $howManyCardsToAdd; $i++)
-                {
-                    $cards = $lobby->getAllAnswerCards();
-                    $filtered_cards = $cards->filter(function($card) use ($lobby){
-                        return  !$lobby->cards()->wherePivot('card_id', $card->id)->exists();
-                    });
+                $cards = $lobby->getAllAnswerCards();
+                $filtered_cards = $cards->filter(function($card) use ($lobby){
+                    return  !$lobby->cards()->wherePivot('card_id', $card->id)->exists();
+                });
 
-                    $random_card = $filtered_cards->random();
+                $random_card = $filtered_cards->random();
 
-                    $player->cards()->attach($random_card);
-                    $lobby->addCard($random_card);
+                $player->cards()->attach($random_card);
+                $lobby->addCard($random_card);
 
-                    broadcast(new UpdateCards($lobby->id, $random_card->id, $player->id));
-                }  
+                broadcast(new UpdateCards($lobby->id, $random_card->id, $player->id));
             }
 
         }
@@ -286,16 +282,20 @@ class LobbyController extends Controller
     {
         $lobby = Lobby::find($request->input('lobby_id'));
         $player = Player::find($request->input('player_id'));
-        $card = Card::find($request->input('card_id'));
-        $player->remove($card);
-        $tableCard = new TableCards([
-            'lobby_id' => $lobby->id,
-            'player_id' => $player->id,
-            'card_id' => $card->id,
-        ]);
-        $tableCard->save();
-        broadcast(new AddSingleCard($lobby->id, $tableCard));
-        broadcast(new RemovePlayerCard($lobby->id, $player->id, $card->id));
+        if(!DB::table('table_cards')->where('player_id', $player->id)->first())
+        {
+            $card = Card::find($request->input('card_id'));
+            $player->remove($card);
+            $lobby->addCard($card);
+            $tableCard = new TableCards([
+                'lobby_id' => $lobby->id,
+                'player_id' => $player->id,
+                'card_id' => $card->id,
+            ]);
+            $tableCard->save();
+            broadcast(new AddSingleCard($lobby->id, $tableCard));
+            broadcast(new RemovePlayerCard($lobby->id, $player->id, $card->id));
+        }
     }
 
     public function chooseWinningCard(Request $request)
@@ -318,6 +318,7 @@ class LobbyController extends Controller
             $lobby->card_id = $random_card->id;
             $lobby->cards()->attach($random_card);
             $this->updateJudge($lobby);
+            $lobby->save();
         }
     }
 
@@ -385,6 +386,13 @@ class LobbyController extends Controller
                 $user->games_played++;
                 $user->save();
             }
+
+            foreach($lobby->sets as $set)
+            {
+                $set->used_times++;
+                $set->save();
+            }
+
             $winner = $lobby->getBestPlayer();
             $user = $winner->user;
             $user->games_won++;
