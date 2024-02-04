@@ -295,6 +295,14 @@ class LobbyController extends Controller
             $tableCard->save();
             broadcast(new AddSingleCard($lobby->id, $tableCard));
             broadcast(new RemovePlayerCard($lobby->id, $player->id, $card->id));
+
+            if(TableCards::where('lobby_id', $lobby->id)->count() === $lobby->countCurrentPlayers() - 1)
+            {
+                $lobby->time_remaining = 1;
+                $lobby->save();
+                broadcast(new PlayCards($lobby->id, $tableCard->cards));
+            }
+
         }
     }
 

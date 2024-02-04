@@ -507,14 +507,12 @@ $(document).ready(function () {
                 url: '{{ route('choose-card') }}',
                 data: { card_id: cardId, lobby_id: lobby, player_id: player },
                 beforeSend: function () {
-                    // Disable the button during the AJAX request
                     isEventAllowed = false;
                 },
                 complete: function () {
-                    // Enable the button after the request is complete
                     setTimeout(function () {
                         isEventAllowed = true;
-                    }, 2500); // Adjust the cooldown period as needed
+                    }, 2500);
                 },
             });
           }
